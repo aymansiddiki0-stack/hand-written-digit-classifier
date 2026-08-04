@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.ruff_cache/
+*.egg-info/
+
+# Node
+node_modules/
+
+# Editor / local tooling
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
