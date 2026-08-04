@@ -1,0 +1,32 @@
+# Single source of truth for pipeline, model, and service configuration.
+# Change values here, not in code.
+
+data:
+  raw_dir: data/raw
+  interim_dir: data/interim
+  processed_dir: data/processed
+  camera_dir: data/camera
+  validation_fraction: 0.1     # taken from the 60k training set, never from test
+  split_seed: 20260802
+
+training:
+  seed: 20260802
+  device: cpu                  # detected hardware: 1 vCPU, no GPU
+  batch_size: 64
+  # model-specific parameters live next to their model configs below
+
+evaluation:
+  confidence_threshold: 0.80   # below this the product must report "uncertain"
+
+service:
+  host: 127.0.0.1
+  port: 8000
+  max_upload_bytes: 5242880    # 5 MiB request-size ceiling
+  model_id: null                # set once a validated artifact exists
+
+privacy:
+  store_raw_camera_frames: false   # raw frames are never retained by default
+
+telemetry:
+  enabled: true
+  events_path: artifacts/telemetry/events.jsonl   # metadata-only JSONL log
