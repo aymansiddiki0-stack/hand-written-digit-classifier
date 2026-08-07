@@ -1,0 +1,27 @@
+/* App shell + camera UI styles: quiet, precise, honest. */
+:root {
+  --ink: #1c1e26;
+  --paper: #fbfbf8;
+  --grid: #d8dbe2;
+  --signal: #2456c8;
+  --warn: #a8451f;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+}
+.shell { max-width: 42rem; margin: 0 auto; }
+h1 { font-size: 2rem; letter-spacing: -0.02em; margin: 0 0 0.5rem; }
+.tagline { color: #4a4e5c; line-height: 1.5; }
+.status { margin-top: 2rem; border: 1px solid var(--grid); border-radius: 8px; padding: 1.25rem; }
+.status p[data-state="ready"] { color: var(--signal); }
+.status p[data-state="unreachable"] { color: var(--warn); }
+button {
+  margin-top: 0.75rem; padding: 0.5rem 1rem; border-radius: 6px;
+  border: 1px solid var(--ink); background: transparent; cursor: pointer;
+  font: inherit;
+}
+button:disabled { opacity: 0.5; cursor: default; }
