@@ -13,7 +13,7 @@ body {
   color: var(--ink);
   background: var(--paper);
 }
-.shell { max-width: 42rem; margin: 0 auto; }
+.shell { max-width: 42rem; margin: 0 auto; padding: 3rem 1.25rem; }
 h1 { font-size: 2rem; letter-spacing: -0.02em; margin: 0 0 0.5rem; }
 .tagline { color: #4a4e5c; line-height: 1.5; }
 .status { margin-top: 2rem; border: 1px solid var(--grid); border-radius: 8px; padding: 1.25rem; }
@@ -24,4 +24,5 @@ button {
   border: 1px solid var(--ink); background: transparent; cursor: pointer;
   font: inherit;
 }
+button:focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
 button:disabled { opacity: 0.5; cursor: default; }
