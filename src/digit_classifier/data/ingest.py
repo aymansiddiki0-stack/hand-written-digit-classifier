@@ -22,6 +22,7 @@ import hashlib
 import json
 import struct
 import urllib.request
+import zlib
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -107,7 +108,7 @@ def _decompress(path: Path) -> bytes:
     try:
         with gzip.open(path, "rb") as fh:
             return fh.read()
-    except (OSError, EOFError) as exc:
+    except (OSError, EOFError, zlib.error) as exc:
         raise MnistIngestionError(f"cannot decompress {path.name}: {exc}") from exc
 
 
