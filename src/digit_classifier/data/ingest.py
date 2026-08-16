@@ -2,8 +2,8 @@
 
 Downloads the four canonical MNIST IDX files from a documented mirror into
 ``data/raw``, validates their structure, decodes them into NumPy arrays in
-``data/interim``, and writes a machine-readable manifest recording checksums
-of the raw files.
+``data/interim``, and writes a machine-readable manifest with SHA-256
+checksums and the retrieval date.
 
 Safety properties:
 - downloads go to a ``*.part`` temp file and are renamed only after the
@@ -12,7 +12,9 @@ Safety properties:
 - ingestion is idempotent: valid existing files are reused, invalid ones are
   re-fetched;
 - validation is structural (IDX magic numbers, declared counts, dimensions,
-  label range) rather than relying on hardcoded reference checksums.
+  label range) rather than relying on hardcoded reference checksums; the
+  observed checksums are recorded in the manifest so later runs can detect
+  tampering or corruption.
 """
 
 from __future__ import annotations
@@ -24,6 +26,7 @@ import struct
 import urllib.request
 import zlib
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 
 import numpy as np
@@ -190,10 +193,12 @@ def ingest_mnist(
     manifest = {
         "dataset": "mnist",
         "source_mirror": mirror,
+        "retrieved_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "raw_files": raw_records,
         "interim_files": {
             key: {
                 "path": str(path.relative_to(interim_dir.parent.parent)),
+                "sha256": sha256_of(path),
                 "shape": list(arrays[key].shape),
                 "dtype": str(arrays[key].dtype),
             }
