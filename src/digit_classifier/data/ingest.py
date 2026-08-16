@@ -181,7 +181,9 @@ def ingest_mnist(
         if n_images != n_labels:
             raise MnistIngestionError(f"{split}: image count {n_images} != label count {n_labels}")
         if n_images != EXPECTED_COUNTS[split]:
-            raise MnistIngestionError(f"{split}: unexpected sample count: {n_images}")
+            raise MnistIngestionError(
+                f"{split}: expected {EXPECTED_COUNTS[split]} samples, found {n_images}"
+            )
 
     # Decode to interim .npy files (uint8, shape checked above).
     interim_paths: dict[str, Path] = {}

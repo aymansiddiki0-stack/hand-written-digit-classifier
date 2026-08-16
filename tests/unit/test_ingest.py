@@ -140,6 +140,17 @@ def test_ingest_rejects_count_mismatch(tmp_path: Path) -> None:
         ingest_mnist(raw, interim, download=False)
 
 
+def test_ingest_rejects_wrong_canonical_count(tmp_path: Path) -> None:
+    raw = tmp_path / "raw"
+    interim = tmp_path / "interim"
+    write_fixture_dataset(raw)
+    # Images and labels agree with each other but not with EXPECTED_COUNTS
+    (raw / FILES["train_images"]).write_bytes(gzip.compress(make_images_payload(59999)))
+    (raw / FILES["train_labels"]).write_bytes(gzip.compress(make_labels_payload(59999)))
+    with pytest.raises(MnistIngestionError, match="expected 60000 samples, found 59999"):
+        ingest_mnist(raw, interim, download=False)
+
+
 def test_ingest_missing_file_with_download_disabled(tmp_path: Path) -> None:
     raw = tmp_path / "raw"
     interim = tmp_path / "interim"
