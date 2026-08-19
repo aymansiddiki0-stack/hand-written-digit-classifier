@@ -29,6 +29,15 @@ def test_hand_computed_case() -> None:
     assert c1["recall"] == pytest.approx(1.0)
 
 
+def test_absent_class_yields_zero_not_nan() -> None:
+    y_true = np.array([0, 0, 1, 1])
+    y_pred = np.array([0, 0, 1, 1])
+    m = evaluate_predictions(y_true, y_pred)
+    c9 = m["per_class"][9]
+    assert c9["precision"] == 0.0 and c9["recall"] == 0.0 and c9["f1"] == 0.0
+    assert c9["support"] == 0
+
+
 def test_invalid_labels_rejected() -> None:
     with pytest.raises(ValueError, match="outside"):
         confusion_matrix(np.array([0, 10]), np.array([0, 1]))
