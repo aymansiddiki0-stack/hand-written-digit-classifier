@@ -100,7 +100,7 @@ def train_model(
                 raise RuntimeError(f"non-finite training loss at epoch {epoch}")
             loss.backward()
             optimizer.step()
-            running_loss += float(loss)
+            running_loss += float(loss.detach())
             batches += 1
         val_metrics = evaluate_split(model, data["val"])
         epoch_log.append(
