@@ -1,0 +1,50 @@
+{
+  "run_id": "baseline-mlp-20260822-235853",
+  "model_kind": "baseline-mlp",
+  "seed": 20260802,
+  "python_version": "3.12.6",
+  "torch_version": "2.13.0+cpu",
+  "device": "cpu",
+  "numpy_version": "2.5.2",
+  "epochs_requested": 4,
+  "best_epoch": 4,
+  "best_val_accuracy": 0.9725,
+  "epoch_log": [
+    {
+      "epoch": 1,
+      "mean_train_loss": 0.2674384904160248,
+      "val_accuracy": 0.9531666666666667
+    },
+    {
+      "epoch": 2,
+      "mean_train_loss": 0.11849718042362428,
+      "val_accuracy": 0.9671666666666666
+    },
+    {
+      "epoch": 3,
+      "mean_train_loss": 0.0826331235593079,
+      "val_accuracy": 0.968
+    },
+    {
+      "epoch": 4,
+      "mean_train_loss": 0.06279448210316935,
+      "val_accuracy": 0.9725
+    }
+  ],
+  "batch_size": 64,
+  "learning_rate": 0.001,
+  "started_at": "2026-08-22T23:58:53+00:00",
+  "finished_at": "2026-08-22T23:59:04+00:00",
+  "wall_seconds": 11.49,
+  "checkpoint_file": "baseline-mlp-20260822-235853.pt",
+  "checkpoint_sha256": "495fd84ddb81ad7d93477e13415d711dfdef34838b029a012573a74d303ed740",
+  "params_sha256": "3d54be34eedcad514f68d321cb7916835387ff6f4bd3a0b69d8f5f37f3dea12e",
+  "dataset_checksums": {
+    "split_indices": "b4ff980393233fc20f0ba27e3606359aaf08a19dd7b69100860b3ef18156d6da",
+    "mnist_manifest": "8241c648e864f5dac50426eee9c0d5a561258537d950393380816cb7470b7205"
+  },
+  "reproducibility_note": "Python/NumPy/PyTorch seeded; exact bitwise reproducibility may vary across hardware and PyTorch builds.",
+  "argv": [
+    "C:\\Ayman\\Ayman Code\\Handwritten Digit Classifier\\handwritten-digit-classifier\\src\\digit_classifier\\training\\train_baseline.py"
+  ]
+}

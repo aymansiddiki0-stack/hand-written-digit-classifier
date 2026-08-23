@@ -30,3 +30,8 @@ privacy:
 telemetry:
   enabled: true
   events_path: artifacts/telemetry/events.jsonl   # metadata-only JSONL log
+
+baseline:
+  hidden_units: 128
+  epochs: 4
+  learning_rate: 0.001
