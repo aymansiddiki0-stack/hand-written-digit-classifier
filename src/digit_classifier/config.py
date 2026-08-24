@@ -54,6 +54,12 @@ class TelemetryConfig(BaseModel):
     events_path: Path
 
 
+class BaselineConfig(BaseModel):
+    hidden_units: int = Field(gt=0)
+    epochs: int = Field(gt=0)
+    learning_rate: float = Field(gt=0.0)
+
+
 class AppConfig(BaseModel):
     data: DataConfig
     training: TrainingConfig
@@ -61,6 +67,7 @@ class AppConfig(BaseModel):
     service: ServiceConfig
     privacy: PrivacyConfig
     telemetry: TelemetryConfig
+    baseline: BaselineConfig
 
 
 def find_project_root(start: Path | None = None) -> Path:
