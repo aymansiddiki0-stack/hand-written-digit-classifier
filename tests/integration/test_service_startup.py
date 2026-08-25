@@ -129,3 +129,10 @@ def test_ready_and_real_prediction_with_selected_model(real_model_server: str) -
 def test_repeated_requests_stay_stable(empty_models_server: str) -> None:
     for _ in range(25):
         assert httpx.get(f"{empty_models_server}/health", timeout=5.0).status_code == 200
+
+
+def test_port_released_after_shutdown(tmp_path: Path) -> None:
+    proc, base = start_server(tmp_path)
+    stop_server(proc)
+    with pytest.raises(httpx.HTTPError):
+        httpx.get(f"{base}/health", timeout=1.0)
