@@ -2,7 +2,8 @@
 
 Usage: uv run python scripts/verify_all.py
 Exits non-zero on the first failing group and prints an honest summary.
-Slow work (full training, camera benchmarks) is intentionally excluded and runs through separate commands documented in the README.
+Slow work (full training, camera benchmarks) is intentionally excluded and
+runs through separate commands documented in the README.
 """
 
 from __future__ import annotations
