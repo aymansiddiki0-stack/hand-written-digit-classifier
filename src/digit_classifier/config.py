@@ -60,6 +60,14 @@ class BaselineConfig(BaseModel):
     learning_rate: float = Field(gt=0.0)
 
 
+class CnnConfig(BaseModel):
+    epochs: int = Field(gt=0)
+    learning_rate: float = Field(gt=0.0)
+    batch_size: int = Field(gt=0)
+    dropout_conv: float = Field(ge=0.0, lt=1.0)
+    dropout_fc: float = Field(ge=0.0, lt=1.0)
+
+
 class AppConfig(BaseModel):
     data: DataConfig
     training: TrainingConfig
@@ -68,6 +76,7 @@ class AppConfig(BaseModel):
     privacy: PrivacyConfig
     telemetry: TelemetryConfig
     baseline: BaselineConfig
+    cnn: CnnConfig
 
 
 def find_project_root(start: Path | None = None) -> Path:
