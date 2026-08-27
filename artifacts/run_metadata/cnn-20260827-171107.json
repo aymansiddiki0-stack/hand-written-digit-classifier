@@ -1,0 +1,93 @@
+{
+  "run_id": "cnn-20260827-171107",
+  "model_kind": "compact-cnn",
+  "seed": 20260802,
+  "python_version": "3.12.6",
+  "torch_version": "2.13.0+cpu",
+  "numpy_version": "2.5.2",
+  "device": "cpu",
+  "epochs_requested": 10,
+  "epochs_completed": 10,
+  "best_epoch": 10,
+  "best_val_accuracy": 0.9923333333333333,
+  "epoch_log": [
+    {
+      "epoch": 1,
+      "mean_train_loss": 0.28908774911721735,
+      "val_accuracy": 0.9811666666666666,
+      "epoch_seconds": 38.5
+    },
+    {
+      "epoch": 2,
+      "mean_train_loss": 0.09230389405412696,
+      "val_accuracy": 0.9865,
+      "epoch_seconds": 205.1
+    },
+    {
+      "epoch": 3,
+      "mean_train_loss": 0.07052349488988024,
+      "val_accuracy": 0.9885,
+      "epoch_seconds": 40.1
+    },
+    {
+      "epoch": 4,
+      "mean_train_loss": 0.061284331454767436,
+      "val_accuracy": 0.9888333333333333,
+      "epoch_seconds": 61.8
+    },
+    {
+      "epoch": 5,
+      "mean_train_loss": 0.0486574752115031,
+      "val_accuracy": 0.9903333333333333,
+      "epoch_seconds": 50.1
+    },
+    {
+      "epoch": 6,
+      "mean_train_loss": 0.042997525550283806,
+      "val_accuracy": 0.9891666666666666,
+      "epoch_seconds": 47.2
+    },
+    {
+      "epoch": 7,
+      "mean_train_loss": 0.040449652277921896,
+      "val_accuracy": 0.9895,
+      "epoch_seconds": 47.0
+    },
+    {
+      "epoch": 8,
+      "mean_train_loss": 0.03495591070714861,
+      "val_accuracy": 0.9911666666666666,
+      "epoch_seconds": 46.3
+    },
+    {
+      "epoch": 9,
+      "mean_train_loss": 0.031326948530459996,
+      "val_accuracy": 0.9921666666666666,
+      "epoch_seconds": 55.4
+    },
+    {
+      "epoch": 10,
+      "mean_train_loss": 0.02902489254952925,
+      "val_accuracy": 0.9923333333333333,
+      "epoch_seconds": 49.1
+    }
+  ],
+  "batch_size": 256,
+  "learning_rate": 0.001,
+  "model_config": {
+    "dropout_conv": 0.25,
+    "dropout_fc": 0.5
+  },
+  "started_at": "2026-08-27T17:11:08+00:00",
+  "finished_at": "2026-08-27T17:23:23+00:00",
+  "wall_seconds": 640.67,
+  "checkpoint_file": "cnn-20260827-171107.pt",
+  "checkpoint_sha256": "56bcfe8c3fb52552ee968accb5afceb34eb1f04661cc1550e8772b214fde6a78",
+  "params_sha256": "f96cd524dbce8bd8044a6ab81d8e606b066468fff64312ae09b9fa814a4bb65d",
+  "dataset_checksums": {
+    "split_indices": "b4ff980393233fc20f0ba27e3606359aaf08a19dd7b69100860b3ef18156d6da",
+    "mnist_manifest": "8241c648e864f5dac50426eee9c0d5a561258537d950393380816cb7470b7205"
+  },
+  "training_mode": "resumable-one-epoch-per-invocation",
+  "reproducibility_note": "Python/NumPy/PyTorch seeded; RNG state persisted between epoch invocations; exact bitwise reproducibility may vary across hardware."
+}
