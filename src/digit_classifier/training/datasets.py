@@ -61,3 +61,19 @@ def make_loader(
     return DataLoader(
         TensorDataset(*tensors), batch_size=batch_size, shuffle=shuffle, generator=generator
     )
+
+
+def random_shift(batch: torch.Tensor, max_shift: int, generator: torch.Generator) -> torch.Tensor:
+    """Randomly translate each image by up to +/- max_shift pixels (training-only
+    augmentation). Uses torch.roll: MNIST borders are background-constant after
+    normalization, so wrapped edge pixels are background too."""
+    if max_shift == 0:
+        return batch
+    n = batch.shape[0]
+    shifts = torch.randint(-max_shift, max_shift + 1, (n, 2), generator=generator)
+    out = batch.clone()
+    for dy, dx in {(int(a), int(b)) for a, b in shifts}:
+        mask = (shifts[:, 0] == dy) & (shifts[:, 1] == dx)
+        if dy or dx:
+            out[mask] = torch.roll(batch[mask], shifts=(dy, dx), dims=(2, 3))
+    return out

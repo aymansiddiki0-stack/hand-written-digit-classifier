@@ -42,3 +42,4 @@ cnn:
   batch_size: 256
   dropout_conv: 0.25
   dropout_fc: 0.5
+  augment_max_shift: 2   # random +/- pixel shift during training only
