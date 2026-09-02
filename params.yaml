@@ -43,3 +43,5 @@ cnn:
   dropout_conv: 0.25
   dropout_fc: 0.5
   augment_max_shift: 2   # random +/- pixel shift during training only
+  lr_step_epochs: 4      # halve the learning rate every N epochs
+  lr_gamma: 0.5
