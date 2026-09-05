@@ -66,6 +66,9 @@ class CnnConfig(BaseModel):
     batch_size: int = Field(gt=0)
     dropout_conv: float = Field(ge=0.0, lt=1.0)
     dropout_fc: float = Field(ge=0.0, lt=1.0)
+    augment_max_shift: int = Field(ge=0, le=5)
+    lr_step_epochs: int = Field(gt=0)
+    lr_gamma: float = Field(gt=0.0, le=1.0)
 
 
 class AppConfig(BaseModel):

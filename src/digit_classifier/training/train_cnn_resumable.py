@@ -26,7 +26,7 @@ from torch import nn
 
 from digit_classifier.config import find_project_root, load_config
 from digit_classifier.models.cnn import MODEL_KIND, CompactCnn
-from digit_classifier.training.datasets import load_mnist_tensors, make_loader
+from digit_classifier.training.datasets import load_mnist_tensors, make_loader, random_shift
 from digit_classifier.training.train import evaluate_split, seed_everything, sha256_file
 
 STATE_FILE = "cnn_resume_state.pt"
@@ -88,10 +88,20 @@ def run_epoch() -> int:
         seed=cfg.training.seed + epoch,
     )
 
+    # Stateless stepped LR decay: derived from the epoch number so it
+    # survives resumption without scheduler state.
+    lr = cfg.cnn.learning_rate * (cfg.cnn.lr_gamma ** ((epoch - 1) // cfg.cnn.lr_step_epochs))
+    for group in optimizer.param_groups:
+        group["lr"] = lr
+
+    augment_gen = torch.Generator()
+    augment_gen.manual_seed(cfg.training.seed * 1000 + epoch)
+
     t0 = time.monotonic()
     model.train()
     running, batches = 0.0, 0
     for xb, yb in loader:
+        xb = random_shift(xb, cfg.cnn.augment_max_shift, augment_gen)
         optimizer.zero_grad()
         loss = loss_fn(model(xb), yb)
         if not torch.isfinite(loss):
@@ -122,7 +132,7 @@ def run_epoch() -> int:
     torch.save(state, state_path)
 
     print(
-        f"epoch {epoch}/{cfg.cnn.epochs}: loss {entry['mean_train_loss']:.4f} "
+        f"epoch {epoch}/{cfg.cnn.epochs} (lr {lr:g}): loss {entry['mean_train_loss']:.4f} "
         f"val_acc {val['accuracy']:.4f} ({elapsed:.0f}s) "
         f"best so far: epoch {state['best_epoch']} @ {state['best_val_accuracy']:.4f}"
     )
