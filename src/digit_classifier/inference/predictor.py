@@ -44,7 +44,9 @@ class ModelLoadError(Exception):
 def _build_architecture(kind: str, model_config: dict) -> nn.Module:
     if kind == cnn_mod.MODEL_KIND:
         return cnn_mod.CompactCnn(**model_config)
-    return baseline_mod.BaselineMlp(**model_config)
+    if kind == baseline_mod.MODEL_KIND:
+        return baseline_mod.BaselineMlp(**model_config)
+    raise ModelLoadError(f"unknown model kind: {kind!r}")
 
 
 @dataclass(frozen=True)
@@ -99,5 +101,8 @@ def load_current_model(models_dir: Path) -> Predictor:
         )
 
     model = _build_architecture(meta["model_kind"], dict(meta["model_config"]))
-    load_checkpoint(checkpoint_path, model, expected_kind=meta["model_kind"])
+    try:
+        load_checkpoint(checkpoint_path, model, expected_kind=meta["model_kind"])
+    except (ValueError, FileNotFoundError) as exc:
+        raise ModelLoadError(str(exc)) from exc
     return Predictor(model, model_id=meta["model_id"], model_kind=meta["model_kind"])
