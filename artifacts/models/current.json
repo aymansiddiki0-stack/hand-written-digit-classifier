@@ -1,0 +1,12 @@
+{
+  "model_id": "cnn-20260902-171313",
+  "model_kind": "compact-cnn",
+  "checkpoint_file": "cnn-20260902-171313.pt",
+  "checkpoint_sha256": "522c70d53b591dc58961eb5f60216ecd5e450cbdda64037b6f9b4fea870f5cc2",
+  "model_config": {
+    "dropout_conv": 0.25,
+    "dropout_fc": 0.5
+  },
+  "selected_at": "2026-09-06T02:05:46+00:00",
+  "test_accuracy": 0.9931
+}
