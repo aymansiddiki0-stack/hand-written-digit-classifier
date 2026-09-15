@@ -1,0 +1,12 @@
+{
+  "n_samples": 2000,
+  "top1_agreement": 1.0,
+  "max_prob_diff": 6.556510925292969e-07,
+  "tolerance": 1e-05,
+  "within_tolerance": true,
+  "full_agreement": true,
+  "onnx_total_inference_ms": 208.56,
+  "onnxruntime_version": "1.30.0",
+  "torch_version": "2.13.0+cpu",
+  "opset": 18
+}
