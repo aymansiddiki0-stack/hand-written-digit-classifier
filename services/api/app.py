@@ -7,16 +7,20 @@ Lifecycle: the model is loaded once at startup from
 
 from __future__ import annotations
 
+import io
 import logging
+import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Literal
 
-from fastapi import FastAPI, Response, status
+import numpy as np
+from fastapi import FastAPI, HTTPException, Response, UploadFile, status
+from PIL import Image
 from pydantic import BaseModel
 
 from digit_classifier import __version__
-from digit_classifier.config import find_project_root
+from digit_classifier.config import AppConfig, find_project_root, load_config
 from digit_classifier.inference.predictor import ModelLoadError, load_current_model
 
 logger = logging.getLogger("digit_classifier.api")
@@ -40,7 +44,18 @@ class ModelInfoResponse(BaseModel):
     detail: str
 
 
-def create_app(models_dir: Path | None = None) -> FastAPI:
+class PredictionResponse(BaseModel):
+    prediction: int
+    confidence: float
+    uncertain: bool
+    model_id: str
+    preprocessing_id: str
+    inference_ms: float
+    request_id: str
+
+
+def create_app(config: AppConfig | None = None, models_dir: Path | None = None) -> FastAPI:
+    cfg = config or load_config()
     resolved_models_dir = models_dir or find_project_root() / "artifacts" / "models"
 
     @asynccontextmanager
@@ -64,6 +79,7 @@ def create_app(models_dir: Path | None = None) -> FastAPI:
         redoc_url=None,
         lifespan=lifespan,
     )
+    app.state.config = cfg
     app.state.predictor = None
     app.state.model_load_error = "Model loading has not been attempted yet."
 
@@ -98,6 +114,31 @@ def create_app(models_dir: Path | None = None) -> FastAPI:
             model_kind=predictor.model_kind,
             loaded=True,
             detail="Model loaded.",
+        )
+
+    @app.post("/v1/predictions", response_model=PredictionResponse)
+    async def predict(image: UploadFile) -> PredictionResponse:
+        predictor = app.state.predictor
+        if predictor is None:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="No model is loaded; predictions are unavailable.",
+            )
+
+        payload = await image.read()
+        with Image.open(io.BytesIO(payload)) as source:
+            grayscale = source.convert("L").resize((28, 28))
+            image_u8 = np.asarray(grayscale, dtype=np.uint8)
+
+        output = predictor.predict(image_u8)
+        return PredictionResponse(
+            prediction=output.digit,
+            confidence=round(output.confidence, 4),
+            uncertain=output.confidence < cfg.evaluation.confidence_threshold,
+            model_id=predictor.model_id,
+            preprocessing_id="mnist-direct-001",
+            inference_ms=output.inference_ms,
+            request_id=str(uuid.uuid4()),
         )
 
     return app
