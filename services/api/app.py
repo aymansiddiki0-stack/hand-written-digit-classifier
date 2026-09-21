@@ -3,6 +3,8 @@
 Lifecycle: the model is loaded once at startup from
 ``<artifacts>/models/current.json``. A load failure leaves the service alive
 (/health 200) but honestly not-ready (/ready 503 with a bounded reason).
+
+Errors are typed and bounded: no stack traces, no local filesystem paths.
 """
 
 from __future__ import annotations
@@ -15,8 +17,9 @@ from pathlib import Path
 from typing import Literal
 
 import numpy as np
-from fastapi import FastAPI, HTTPException, Response, UploadFile, status
-from PIL import Image
+from fastapi import FastAPI, Response, UploadFile, status
+from fastapi.responses import JSONResponse
+from PIL import Image, UnidentifiedImageError
 from pydantic import BaseModel
 
 from digit_classifier import __version__
@@ -24,6 +27,8 @@ from digit_classifier.config import AppConfig, find_project_root, load_config
 from digit_classifier.inference.predictor import ModelLoadError, load_current_model
 
 logger = logging.getLogger("digit_classifier.api")
+
+ALLOWED_CONTENT_TYPES = {"image/png", "image/jpeg"}
 
 
 class HealthResponse(BaseModel):
@@ -52,6 +57,17 @@ class PredictionResponse(BaseModel):
     preprocessing_id: str
     inference_ms: float
     request_id: str
+
+
+class ErrorResponse(BaseModel):
+    error_code: str
+    detail: str
+    request_id: str
+
+
+def _error(status_code: int, error_code: str, detail: str, request_id: str) -> JSONResponse:
+    body = ErrorResponse(error_code=error_code, detail=detail, request_id=request_id)
+    return JSONResponse(status_code=status_code, content=body.model_dump())
 
 
 def create_app(config: AppConfig | None = None, models_dir: Path | None = None) -> FastAPI:
@@ -116,21 +132,92 @@ def create_app(config: AppConfig | None = None, models_dir: Path | None = None) 
             detail="Model loaded.",
         )
 
-    @app.post("/v1/predictions", response_model=PredictionResponse)
-    async def predict(image: UploadFile) -> PredictionResponse:
+    @app.post(
+        "/v1/predictions",
+        response_model=PredictionResponse,
+        responses={
+            413: {"model": ErrorResponse},
+            415: {"model": ErrorResponse},
+            422: {"model": ErrorResponse},
+            503: {"model": ErrorResponse},
+        },
+    )
+    async def predict(image: UploadFile | None = None):  # noqa: B008
+        request_id = str(uuid.uuid4())
         predictor = app.state.predictor
         if predictor is None:
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="No model is loaded; predictions are unavailable.",
+            return _error(
+                status.HTTP_503_SERVICE_UNAVAILABLE,
+                "model_unavailable",
+                "No model is loaded; predictions are unavailable.",
+                request_id,
             )
-
-        payload = await image.read()
-        with Image.open(io.BytesIO(payload)) as source:
-            grayscale = source.convert("L").resize((28, 28))
-            image_u8 = np.asarray(grayscale, dtype=np.uint8)
-
-        output = predictor.predict(image_u8)
+        if image is None:
+            return _error(
+                status.HTTP_422_UNPROCESSABLE_ENTITY,
+                "missing_image",
+                "Send the image as multipart form field 'image'.",
+                request_id,
+            )
+        if (image.content_type or "") not in ALLOWED_CONTENT_TYPES:
+            return _error(
+                status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+                "unsupported_media_type",
+                f"Supported content types: {sorted(ALLOWED_CONTENT_TYPES)}.",
+                request_id,
+            )
+        max_bytes = cfg.service.max_upload_bytes
+        payload = await image.read(max_bytes + 1)
+        if len(payload) > max_bytes:
+            return _error(
+                status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                "payload_too_large",
+                f"Image exceeds the {max_bytes} byte limit.",
+                request_id,
+            )
+        if not payload:
+            return _error(
+                status.HTTP_422_UNPROCESSABLE_ENTITY,
+                "empty_body",
+                "The uploaded image is empty.",
+                request_id,
+            )
+        try:
+            with Image.open(io.BytesIO(payload)) as source:
+                source.load()
+                grayscale = source.convert("L")
+                if min(grayscale.size) < 28:
+                    return _error(
+                        status.HTTP_422_UNPROCESSABLE_ENTITY,
+                        "image_too_small",
+                        "Image must be at least 28x28 pixels.",
+                        request_id,
+                    )
+                image_u8 = np.asarray(grayscale.resize((28, 28)), dtype=np.uint8)
+        except (UnidentifiedImageError, OSError):
+            return _error(
+                status.HTTP_422_UNPROCESSABLE_ENTITY,
+                "undecodable_image",
+                "The uploaded bytes are not a decodable PNG or JPEG image.",
+                request_id,
+            )
+        if int(image_u8.max()) == int(image_u8.min()):
+            return _error(
+                status.HTTP_422_UNPROCESSABLE_ENTITY,
+                "blank_image",
+                "The uploaded image contains no visible digit.",
+                request_id,
+            )
+        try:
+            output = predictor.predict(image_u8)
+        except (RuntimeError, ValueError):
+            logger.exception("inference failed (request %s)", request_id)
+            return _error(
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
+                "inference_failed",
+                "The model failed to produce a valid prediction.",
+                request_id,
+            )
         return PredictionResponse(
             prediction=output.digit,
             confidence=round(output.confidence, 4),
@@ -138,7 +225,7 @@ def create_app(config: AppConfig | None = None, models_dir: Path | None = None) 
             model_id=predictor.model_id,
             preprocessing_id="mnist-direct-001",
             inference_ms=output.inference_ms,
-            request_id=str(uuid.uuid4()),
+            request_id=request_id,
         )
 
     return app

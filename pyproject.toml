@@ -10,6 +10,8 @@ dependencies = [
     "uvicorn>=0.30",
     "numpy>=2.5.1",
     "torch>=2.13.0",
+    "pillow>=12.3.0",
+    "python-multipart>=0.0.32",
     "onnx>=1.22.0",
     "onnxruntime>=1.28.0",
 ]
