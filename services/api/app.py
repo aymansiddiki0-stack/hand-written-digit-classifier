@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import io
 import logging
+import os
 import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -72,7 +73,14 @@ def _error(status_code: int, error_code: str, detail: str, request_id: str) -> J
 
 def create_app(config: AppConfig | None = None, models_dir: Path | None = None) -> FastAPI:
     cfg = config or load_config()
-    resolved_models_dir = models_dir or find_project_root() / "artifacts" / "models"
+    # Resolution order: explicit argument > DIGIT_MODELS_DIR env var (used by
+    # integration tests to control artifact state) > project default.
+    env_dir = os.environ.get("DIGIT_MODELS_DIR")
+    resolved_models_dir = (
+        models_dir
+        if models_dir is not None
+        else (Path(env_dir) if env_dir else find_project_root() / "artifacts" / "models")
+    )
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
